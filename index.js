@@ -40,6 +40,11 @@ async function watchGasParameters() {
     provider.on("block", async (blockNumber) => {
         try {
             const block = await provider.getBlock(blockNumber);
+            let lastTx = null;
+            if ("transactions" in block && block.transactions.length > 0) {
+                const lastTxHash = block.transactions[block.transactions.length - 1];
+                lastTx = await provider.getTransaction(lastTxHash);
+            }
             const gasPrice = await provider.getFeeData();
             const maxFeePerGas = gasPrice.maxFeePerGas;
             const maxPriorityFeePerGas = gasPrice.maxPriorityFeePerGas;
@@ -52,7 +57,7 @@ async function watchGasParameters() {
             const gasPriceFormatted = ethers.formatUnits(gasPrice.gasPrice, "gwei");
             const maxFeePerGasFormatted = ethers.formatUnits(maxFeePerGas, "gwei");
             const maxPriorityFeePerGasFormatted = ethers.formatUnits(maxPriorityFeePerGas, "gwei");
-            const numTxs = block.transactions.length;
+            const numTxs = block.transactions ? block.transactions.length : 0;
             
             printHeader(`Block ${blockNumber}`);
             printRow("Block Number", blockNumber.toString());
@@ -62,6 +67,17 @@ async function watchGasParameters() {
             printRow("Gas Price", `${gasPriceFormatted} gwei`);
             printRow("Base Fee Per Gas", `${baseFeePerGasFormatted} gwei`);
             printRow("Transactions in Block", numTxs.toString());
+            if (lastTx) {
+                let data = lastTx.data;
+                const builtByFlashbots = (() => {
+                    try {
+                        const decodedData = ethers.toUtf8String(data);
+                        return decodedData == `Block Number: ${blockNumber}` ? "YES" : "nope";
+                    } catch (err) {
+                        return "nope";
+                    }})();
+                printRow("Built by Flashbots", builtByFlashbots);
+            }
             printDash();
         } catch (error) {
             console.error("Error fetching gas parameters:", error);
