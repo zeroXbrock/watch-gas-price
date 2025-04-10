@@ -1,4 +1,5 @@
 const { ethers } = require("ethers");
+const fs = require("fs");
 
 // Get the RPC endpoint from command-line arguments
 const rpcEndpoint = process.argv[2];
@@ -33,13 +34,26 @@ const printHeader = (data) => {
     printSpecialMessage(data);
 }
 
+function saveMissedBlock (data) {
+    const logMessage = `[${Date.now().toLocaleString()}] { blockNumber: ${data.blockNumber}, gasUsed: "${data.gasUsedPercentageFormatted}%", numTxs: ${data.numTxs} }\n`;
+    fs.appendFile("failure.logs", logMessage, (err) => {
+        if (err) {
+            console.error("Error writing to file:", err);
+        } else {
+            console.log("* Log message appended to failure.logs");
+        }
+    });
+}
+
 async function watchGasParameters() {
     console.log("Watching gas parameters...");
-
-
     provider.on("block", async (blockNumber) => {
         try {
-            const block = await provider.getBlock(blockNumber);
+            let block = await provider.getBlock(blockNumber);
+            while (!block) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                block = await provider.getBlock(blockNumber);
+            }
             let lastTx = null;
             if ("transactions" in block && block.transactions.length > 0) {
                 const lastTxHash = block.transactions[block.transactions.length - 1];
@@ -72,11 +86,27 @@ async function watchGasParameters() {
                 const builtByFlashbots = (() => {
                     try {
                         const decodedData = ethers.toUtf8String(data);
-                        return decodedData == `Block Number: ${blockNumber}` ? "YES" : "nope";
+                        return decodedData == `Block Number: ${blockNumber}`
                     } catch (err) {
-                        return "nope";
+                        return false;
                     }})();
-                printRow("Built by Flashbots", builtByFlashbots);
+                printRow("Built by Flashbots", builtByFlashbots ? "YES" : "NO");
+                if (!builtByFlashbots) {
+                    const data = {
+                        gasPrice,
+                        maxFeePerGas,
+                        maxPriorityFeePerGas,
+                        gasLimit,
+                        gasUsed,
+                        gasUsedPercentage,
+                        gasUsedPercentageFormatted,
+                        baseFeePerGas,
+                        numTxs,
+                        blockNumber,
+                    }
+                    // append this result to a file "failure.logs"
+                    saveMissedBlock(data);
+                }
             }
             printDash();
         } catch (error) {
