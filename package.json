@@ -1,0 +1,12 @@
+{
+  "name": "watch-gas-price",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "ethers": "^6.13.5"
+  }
+}
