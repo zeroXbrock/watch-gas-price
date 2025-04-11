@@ -76,10 +76,10 @@ async function watchGasParameters() {
             printHeader(`Block ${blockNumber}`);
             printRow("Block Number", blockNumber.toString());
             printRow("Gas Used", `${gasUsed} / ${gasLimit} (${gasUsedPercentageFormatted}%)`);
-            printRow("Max Fee Per Gas", `${maxFeePerGasFormatted} gwei`);
-            printRow("Max Priority Fee", `${maxPriorityFeePerGasFormatted} gwei`);
-            printRow("Gas Price", `${gasPriceFormatted} gwei`);
-            printRow("Base Fee Per Gas", `${baseFeePerGasFormatted} gwei`);
+            printRow("Max Fee Per Gas", `${maxFeePerGasFormatted} gwei per gas`);
+            printRow("Max Priority Fee", `${maxPriorityFeePerGasFormatted} gwei per gas`);
+            printRow("Gas Price", `${gasPriceFormatted} gwei per gas`);
+            printRow("Base Fee", `${baseFeePerGasFormatted} gwei per gas`);
             printRow("Transactions in Block", numTxs.toString());
             if (lastTx) {
                 let data = lastTx.data;
