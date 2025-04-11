@@ -35,7 +35,7 @@ const printHeader = (data) => {
 }
 
 function saveMissedBlock (data) {
-    const logMessage = `[${Date.now().toLocaleString()}] { blockNumber: ${data.blockNumber}, gasUsed: "${data.gasUsedPercentageFormatted}%", numTxs: ${data.numTxs} }\n`;
+    const logMessage = `[${Date.now()}] { blockNumber: ${data.blockNumber}, gasUsed: "${data.gasUsedPercentageFormatted}%", numTxs: ${data.numTxs} }\n`;
     fs.appendFile("failure.logs", logMessage, (err) => {
         if (err) {
             console.error("Error writing to file:", err);
