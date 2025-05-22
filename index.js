@@ -39,8 +39,6 @@ function saveMissedBlock (data) {
     fs.appendFile("failure.logs", logMessage, (err) => {
         if (err) {
             console.error("Error writing to file:", err);
-        } else {
-            console.log("* Log message appended to failure.logs");
         }
     });
 }
